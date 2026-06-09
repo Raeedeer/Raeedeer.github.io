@@ -752,14 +752,7 @@
         tg.sendData(JSON.stringify(orderData));
       }, 380);
     } else {
-      // Demo mode (opened outside Telegram)
-      showToast("✅ Заказ оформлен в демо-режиме");
-      console.log("%c[DEMO] Order data sent to bot:", "color:#6c63ff", orderData);
-      setTimeout(function() {
-        if (confirm("Демо-режим: показать данные заказа?")) {
-          alert(JSON.stringify(orderData, null, 2));
-        }
-      }, 900);
+      showToast("⚠️ Открой мини-приложение через Telegram бота");
     }
   }
 
