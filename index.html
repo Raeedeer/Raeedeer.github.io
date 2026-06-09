@@ -514,6 +514,16 @@
     </div>
 
     <div>
+      <div class="section-title">Ваше имя</div>
+      <input id="orderName" type="text" class="comment-textarea" style="min-height:44px; padding:12px 14px;" placeholder="Иван Иванов" />
+    </div>
+
+    <div>
+      <div class="section-title">Номер телефона</div>
+      <input id="orderPhone" type="tel" class="comment-textarea" style="min-height:44px; padding:12px 14px;" placeholder="+380971234567" />
+    </div>
+
+    <div>
       <div class="section-title">Комментарий к заказу <span style="font-weight:400;opacity:0.7">(опционально)</span></div>
       <textarea id="orderComment" class="comment-textarea" placeholder="Дополнительные пожелания, например: «нужен размер M», «доставка после 18:00»..."></textarea>
     </div>
@@ -727,14 +737,23 @@
   function confirmOrder() {
     if (!currentOrderProduct) return;
 
+    const name = (document.getElementById("orderName").value || "").trim();
+    const phone = (document.getElementById("orderPhone").value || "").trim();
     const comment = (document.getElementById("orderComment").value || "").trim();
     const sizeFinal = selectedSize || (currentOrderProduct.sizes && currentOrderProduct.sizes[0]) || "";
+
+    if (!name || !phone) {
+      showToast("⚠️ Пожалуйста, укажите имя и телефон");
+      return;
+    }
 
     const orderData = {
       action: "order",
       product: currentOrderProduct.name,
       size: sizeFinal,
       qty: currentQty,
+      name: name,
+      phone: phone,
       comment: comment,
       price: currentOrderProduct.price,
       total: document.getElementById("totalPrice").textContent
