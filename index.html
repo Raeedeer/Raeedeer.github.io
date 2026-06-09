@@ -362,12 +362,17 @@
   }
 
   function orderProduct(name) {
-    if (tg) {
-      tg.sendData(JSON.stringify({ action: "order", product: name }));
+    // FIX: проверяем что tg существует и поддерживает sendData
+    if (tg && tg.sendData) {
+      showToast("🛒 Открываю оформление заказа...");
+      // Небольшая задержка чтобы тост успел показаться перед закрытием WebApp
+      setTimeout(() => {
+        tg.sendData(JSON.stringify({ action: "order", product: name }));
+      }, 400);
     } else {
-      showToast(`🛒 "${name}" — открой бота для заказа!`);
+      // FIX: убрали дублирующий вызов showToast — теперь только один
+      showToast(`🛒 Открой бота в Telegram для заказа!`);
     }
-    showToast("🛒 Открываю оформление заказа...");
   }
 
   function showToast(msg) {
