@@ -1,0 +1,90 @@
+[
+  {
+    "id": 1,
+    "cat": "hoodies",
+    "emoji": "🧥",
+    "badge": "Хит",
+    "badgeType": "",
+    "name": "Oversize Hoodie «Midnight»",
+    "sizes": ["S", "M", "L", "XL"],
+    "price": "3 490 ₽",
+    "oldPrice": "4 200 ₽"
+  },
+  {
+    "id": 2,
+    "cat": "tshirts",
+    "emoji": "👕",
+    "badge": "Новинка",
+    "badgeType": "new",
+    "name": "Футболка «Urban Camo»",
+    "sizes": ["XS", "S", "M", "L", "XL"],
+    "price": "1 890 ₽",
+    "oldPrice": null
+  },
+  {
+    "id": 3,
+    "cat": "hoodies",
+    "emoji": "🫧",
+    "badge": "−20%",
+    "badgeType": "",
+    "name": "Zip-Hoodie «Frost»",
+    "sizes": ["M", "L", "XL", "XXL"],
+    "price": "3 990 ₽",
+    "oldPrice": "4 990 ₽"
+  },
+  {
+    "id": 4,
+    "cat": "pants",
+    "emoji": "👖",
+    "badge": "Хит",
+    "badgeType": "",
+    "name": "Джоггеры «Soft Tech»",
+    "sizes": ["S", "M", "L", "XL"],
+    "price": "2 690 ₽",
+    "oldPrice": null
+  },
+  {
+    "id": 5,
+    "cat": "tshirts",
+    "emoji": "🎨",
+    "badge": "Новинка",
+    "badgeType": "new",
+    "name": "Лонгслив «Abstract»",
+    "sizes": ["S", "M", "L"],
+    "price": "2 190 ₽",
+    "oldPrice": null
+  },
+  {
+    "id": 6,
+    "cat": "accessories",
+    "emoji": "🧢",
+    "badge": "−15%",
+    "badgeType": "",
+    "name": "Кепка «5-Panel Logo»",
+    "sizes": ["One Size"],
+    "price": "1 290 ₽",
+    "oldPrice": "1 490 ₽"
+  },
+  {
+    "id": 7,
+    "cat": "pants",
+    "emoji": "🩳",
+    "badge": "Новинка",
+    "badgeType": "new",
+    "name": "Шорты «Cargo Relaxed»",
+    "sizes": ["S", "M", "L", "XL"],
+    "price": "2 390 ₽",
+    "oldPrice": null
+  },
+  {
+    "id": 8,
+    "cat": "accessories",
+    "emoji": "🎒",
+    "badge": "Хит",
+    "badgeType": "",
+    "name": "Сумка-тоут «Essential»",
+    "sizes": ["One Size"],
+    "price": "1 690 ₽",
+    "oldPrice": "2 000 ₽"
+  }
+]
