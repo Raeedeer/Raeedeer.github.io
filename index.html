@@ -126,7 +126,6 @@
     .card-img {
       width: 100%;
       aspect-ratio: 1;
-      object-fit: cover;
       background: linear-gradient(135deg, #1e1e2e, #2a2a3e);
       display: flex;
       align-items: center;
@@ -196,14 +195,14 @@
     }
     .btn-order:active { opacity: .8; }
 
-    /* ── Empty state ── */
-    .empty {
+    /* ── Loading / Error states ── */
+    .state-msg {
       text-align: center;
       padding: 60px 20px;
       color: var(--muted);
       grid-column: 1 / -1;
     }
-    .empty span { font-size: 40px; display: block; margin-bottom: 12px; }
+    .state-msg span { font-size: 40px; display: block; margin-bottom: 12px; }
 
     /* ── Toast ── */
     .toast {
@@ -234,7 +233,14 @@
 </div>
 
 <div class="search-wrap">
-  <input class="search" type="text" placeholder="Поиск товаров..." oninput="filterProducts()" id="searchInput" />
+  <input
+    class="search"
+    type="text"
+    placeholder="Поиск товаров..."
+    id="searchInput"
+    oninput="render()"
+    autocomplete="off"
+  />
 </div>
 
 <div class="categories" id="categories">
@@ -245,144 +251,127 @@
   <button class="cat-btn" onclick="selectCat(this, 'accessories')">Аксессуары</button>
 </div>
 
-<div class="grid" id="grid"></div>
+<div class="grid" id="grid">
+  <div class="state-msg"><span>⏳</span>Загрузка каталога…</div>
+</div>
 
-<div class="toast" id="toast">🛒 Товар добавлен в заказ!</div>
+<div class="toast" id="toast"></div>
 
 <script>
-  // Init Telegram Web App
+  // ── Telegram Web App init ─────────────────────────────────────
   const tg = window.Telegram?.WebApp;
   if (tg) {
     tg.ready();
     tg.expand();
   }
 
-  const products = [
-    {
-      id: 1, cat: "hoodies", emoji: "🧥",
-      badge: "Хит", badgeType: "",
-      name: "Oversize Hoodie «Midnight»",
-      sizes: ["S","M","L","XL"],
-      price: "3 490 ₽", oldPrice: "4 200 ₽"
-    },
-    {
-      id: 2, cat: "tshirts", emoji: "👕",
-      badge: "Новинка", badgeType: "new",
-      name: "Футболка «Urban Camo»",
-      sizes: ["XS","S","M","L","XL"],
-      price: "1 890 ₽", oldPrice: null
-    },
-    {
-      id: 3, cat: "hoodies", emoji: "🫧",
-      badge: "−20%", badgeType: "",
-      name: "Zip-Hoodie «Frost»",
-      sizes: ["M","L","XL","XXL"],
-      price: "3 990 ₽", oldPrice: "4 990 ₽"
-    },
-    {
-      id: 4, cat: "pants", emoji: "👖",
-      badge: "Хит", badgeType: "",
-      name: "Джоггеры «Soft Tech»",
-      sizes: ["S","M","L","XL"],
-      price: "2 690 ₽", oldPrice: null
-    },
-    {
-      id: 5, cat: "tshirts", emoji: "🎨",
-      badge: "Новинка", badgeType: "new",
-      name: "Лонгслив «Abstract»",
-      sizes: ["S","M","L"],
-      price: "2 190 ₽", oldPrice: null
-    },
-    {
-      id: 6, cat: "accessories", emoji: "🧢",
-      badge: "−15%", badgeType: "",
-      name: "Кепка «5-Panel Logo»",
-      sizes: ["One Size"],
-      price: "1 290 ₽", oldPrice: "1 490 ₽"
-    },
-    {
-      id: 7, cat: "pants", emoji: "🩳",
-      badge: "Новинка", badgeType: "new",
-      name: "Шорты «Cargo Relaxed»",
-      sizes: ["S","M","L","XL"],
-      price: "2 390 ₽", oldPrice: null
-    },
-    {
-      id: 8, cat: "accessories", emoji: "🎒",
-      badge: "Хит", badgeType: "",
-      name: "Сумка-тоут «Essential»",
-      sizes: ["One Size"],
-      price: "1 690 ₽", oldPrice: "2 000 ₽"
-    },
-  ];
-
+  // ── State ────────────────────────────────────────────────────
+  let products = [];
   let currentCat = "all";
 
+  // ── Load products from products.json ─────────────────────────
+  // products.json лежит в той же папке, что и index.html
+  fetch("products.json")
+    .then(function(res) {
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      return res.json();
+    })
+    .then(function(data) {
+      products = data;
+      render();
+    })
+    .catch(function(err) {
+      console.error("Не удалось загрузить каталог:", err);
+      document.getElementById("grid").innerHTML =
+        '<div class="state-msg"><span>😕</span>Не удалось загрузить каталог.<br>Попробуй обновить страницу.</div>';
+    });
+
+  // ── Category filter ──────────────────────────────────────────
   function selectCat(el, cat) {
-    document.querySelectorAll(".cat-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".cat-btn").forEach(function(b) {
+      b.classList.remove("active");
+    });
     el.classList.add("active");
     currentCat = cat;
     render();
   }
 
-  function filterProducts() { render(); }
-
+  // ── Render ───────────────────────────────────────────────────
   function render() {
-    const q = document.getElementById("searchInput").value.toLowerCase();
-    const filtered = products.filter(p =>
-      (currentCat === "all" || p.cat === currentCat) &&
-      (!q || p.name.toLowerCase().includes(q))
-    );
-    const grid = document.getElementById("grid");
+    var q = document.getElementById("searchInput").value.toLowerCase().trim();
+    var filtered = products.filter(function(p) {
+      var matchCat = currentCat === "all" || p.cat === currentCat;
+      var matchQ   = !q || p.name.toLowerCase().indexOf(q) !== -1;
+      return matchCat && matchQ;
+    });
+
+    var grid = document.getElementById("grid");
 
     if (!filtered.length) {
-      grid.innerHTML = `<div class="empty"><span>🔍</span>Товары не найдены</div>`;
+      grid.innerHTML = '<div class="state-msg"><span>🔍</span>Товары не найдены</div>';
       return;
     }
 
-    grid.innerHTML = filtered.map(p => `
-      <div class="card" onclick="orderProduct('${p.name}')">
-        <div class="card-img">${p.emoji}</div>
-        <div class="card-body">
-          <span class="card-badge ${p.badgeType}">${p.badge}</span>
-          <div class="card-name">${p.name}</div>
-          <div class="card-sizes">
-            ${p.sizes.map(s => `<span class="size-tag">${s}</span>`).join("")}
-          </div>
-          <div>
-            ${p.oldPrice ? `<div class="card-old-price">${p.oldPrice}</div>` : ""}
-            <div class="card-price">${p.price}</div>
-          </div>
-          <button class="btn-order" onclick="event.stopPropagation(); orderProduct('${p.name}')">
-            🛒 Заказать
-          </button>
-        </div>
-      </div>
-    `).join("");
+    grid.innerHTML = filtered.map(function(p) {
+      // Экранируем имя товара для безопасной вставки в HTML-атрибут
+      var safeNameAttr = p.name.replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+      var safeNameHtml = p.name
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+
+      var sizeTags = p.sizes.map(function(s) {
+        return '<span class="size-tag">' + s + '</span>';
+      }).join("");
+
+      var oldPriceHtml = p.oldPrice
+        ? '<div class="card-old-price">' + p.oldPrice + '</div>'
+        : "";
+
+      return (
+        '<div class="card" onclick="orderProduct(\'' + safeNameAttr + '\')">' +
+          '<div class="card-img">' + p.emoji + '</div>' +
+          '<div class="card-body">' +
+            '<span class="card-badge ' + (p.badgeType || "") + '">' + p.badge + '</span>' +
+            '<div class="card-name">' + safeNameHtml + '</div>' +
+            '<div class="card-sizes">' + sizeTags + '</div>' +
+            '<div>' +
+              oldPriceHtml +
+              '<div class="card-price">' + p.price + '</div>' +
+            '</div>' +
+            '<button class="btn-order" onclick="event.stopPropagation(); orderProduct(\'' + safeNameAttr + '\')">' +
+              '🛒 Заказать' +
+            '</button>' +
+          '</div>' +
+        '</div>'
+      );
+    }).join("");
   }
 
+  // ── Order ─────────────────────────────────────────────────────
   function orderProduct(name) {
-    // FIX: проверяем что tg существует и поддерживает sendData
     if (tg && tg.sendData) {
-      showToast("🛒 Открываю оформление заказа...");
-      // Небольшая задержка чтобы тост успел показаться перед закрытием WebApp
-      setTimeout(() => {
+      showToast("🛒 Открываю оформление заказа…");
+      // Небольшая задержка, чтобы тост успел показаться перед закрытием WebApp
+      setTimeout(function() {
         tg.sendData(JSON.stringify({ action: "order", product: name }));
       }, 400);
     } else {
-      // FIX: убрали дублирующий вызов showToast — теперь только один
-      showToast(`🛒 Открой бота в Telegram для заказа!`);
+      showToast("🛒 Открой бота в Telegram для заказа!");
     }
   }
 
+  // ── Toast ─────────────────────────────────────────────────────
+  var _toastTimer = null;
   function showToast(msg) {
-    const t = document.getElementById("toast");
+    var t = document.getElementById("toast");
     t.textContent = msg;
     t.classList.add("show");
-    setTimeout(() => t.classList.remove("show"), 2800);
+    if (_toastTimer) clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(function() {
+      t.classList.remove("show");
+    }, 2800);
   }
-
-  render();
 </script>
 </body>
 </html>
